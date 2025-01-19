@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as userController from '../controllers/user.controller.js';
+import * as authMiddleware from '../middleware/auth.middleware.js';
 import { body } from 'express-validator';
 
 const router = Router();
@@ -17,5 +18,12 @@ router.post('/login',
     body('password').isLength({ min: 2 }).withMessage('Please valid password'),
     userController.loginUserController
 )
+
+//profile route..
+router.get('/profile', authMiddleware.authUser, userController.profileController);
+
+//logout route..
+router.get('/logout', authMiddleware.authUser, userController.logoutController)
+
 
 export default router;

@@ -1,9 +1,10 @@
 import userModel from '../models/user.model.js';
 import * as userService from '../services/user.service.js';
 import { validationResult } from 'express-validator';
+import redisClient from '../services/redis.service.js';
 
 
-// Create user controller
+// Create user controller..
 export const createUserController = async (req, res) => {
 
     const errors = validationResult(req);
@@ -51,6 +52,38 @@ export const loginUserController = async (req, res) => {
         return res.status(200).json({ user, token })
 
     } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
+}
+
+// profile controller..
+export const profileController = async (req, res) => {
+    try {
+
+        console.log(req.user);
+        res.status(200).json({
+            user: req.user
+        });
+
+    } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
+}
+
+// logout controller..
+export const logoutController = async (req, res) => {
+    try {
+
+        const token = req.cookies?.token || req.headers.authorization.split(' ')[1];
+        if (!token)
+            return res.status(401).json({ error: 'Unauthorized user! No token provided' });
+
+        redisClient.set(token, 'logout', 'EX', 60 * 60 * 24)
+
+        res.status(200).json({ message: 'Logout successfully' });
+
+    } catch (err) {
+        console.log(err, 'error from logout controller');
         return res.status(400).json({ error: err.message });
     }
 }
